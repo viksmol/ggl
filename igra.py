@@ -1,16 +1,22 @@
 from pygame import *
-
+from random import randint
 
 mixer.init()
 mixer.music.load('space.ogg')
 mixer.music.play()
 fire_sound = mixer.Sound('babax.ogg')
 
-img_bacl = 'backgroud.jpg'
-img_hero = 'reketa.png'
+font.init()
+font2 = font.Font(None,36)
+
+img_bacl = 'fon.jpg'
+img_hero = 'raleta.png'
+img_enemy = 'gojo.png'
 
 Clock = time.Clock()
 FPS = 60
+score = 0
+lost = 0
 
 class GameSprite(sprite.Sprite):
     def __init__(self,  player_image, player_x, player_y, size_x, size_y, player_speed):
@@ -24,7 +30,7 @@ class GameSprite(sprite.Sprite):
         self.rect.y = player_y
 
     def reset(self):
-        widow.blit(self.image, (self.rect.x, self.rect.y))
+        window.blit(self.image, (self.rect.x, self.rect.y))
 class Player(GameSprite):
 
     def update(self):
@@ -36,14 +42,28 @@ class Player(GameSprite):
 
     def fire(self):
         pass
+class Enemy(GameSprite):
+    def update(self):
+        self.rect.y += self.speed
+        global lost
+        if self.rect.y >win_height:
+            self.rect.x = randint(80, win_width - 80) 
+            self.rect.y = 0
+            lost = lost + 1
 
 win_width =  800
 win_height = 700
 display.set_caption('shooter')
 window = display.set_mode((win_width, win_height))
-backgoround = transform.scale(image.load(img_back), (win_width, win_height))
+backgoround = transform.scale(image.load(img_bacl), (win_width, win_height))
 
 ship = Player(img_hero, 5, win_height - 100, 80, 100, 10)
+
+monsters = sprite.Group()
+for i in range(1, 6):
+    monster = Enemy(img_enemy, randint(
+        80, win_width - 80),-40, 80, 50, randint(1,3))
+    monsters.add(monster)
 
 finish = False
 
@@ -56,10 +76,17 @@ while run:
     
     if not finish:
         window.blit(backgoround, (0,0))
+        text = font2.render("Рахунок:" + str(score), 1, (255, 255, 255))
+        window.blit(text, (10, 20))
+
+        text_lose = font2.render(f"Пропущено: {lost}", 1, (255, 255, 255,))
+        window.blit(text_lose, (10, 50))
 
         ship.update()
+        monsters.update()
 
         ship.reset()
+        monsters.draw(window)
 
     display.update()
     Clock.tick(FPS)
